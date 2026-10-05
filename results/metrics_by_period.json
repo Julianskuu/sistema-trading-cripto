@@ -1,0 +1,88 @@
+{
+  "global": {
+    "total_return_pct": -55.095842687638566,
+    "cagr_pct": -8.793782455123589,
+    "max_drawdown_pct": -56.11072427694821,
+    "sharpe_ratio": -0.9493235238046842,
+    "num_trades": 240,
+    "win_rate_pct": 25.833333333333336,
+    "avg_win_pct": 2.6718229107932254,
+    "avg_loss_pct": -1.0769658255776173,
+    "profit_factor": 0.8641267200441879,
+    "final_equity": 449.04157312361434,
+    "years_tested": 8.698151950718685
+  },
+  "buy_and_hold_global_pct": 466.4621895736472,
+  "by_period": {
+    "2018-2019 (bear/lateral)": {
+      "total_return_pct": -24.11388290144337,
+      "cagr_pct": -12.912088419579781,
+      "max_drawdown_pct": -27.59251358826963,
+      "sharpe_ratio": -1.200409115951758,
+      "num_trades": 55,
+      "win_rate_pct": 25.454545454545453,
+      "avg_win_pct": 2.376820076374808,
+      "avg_loss_pct": -1.3200002303793412,
+      "profit_factor": 0.6148461800015732,
+      "final_equity": 758.8611709855662,
+      "years_tested": 1.995893223819302,
+      "buy_hold_return_pct": -46.86947745095811
+    },
+    "2020-2021 (bull)": {
+      "total_return_pct": -2.681981143761747,
+      "cagr_pct": -1.3510229365818582,
+      "max_drawdown_pct": -17.445131350321255,
+      "sharpe_ratio": -0.07076013291473686,
+      "num_trades": 61,
+      "win_rate_pct": 31.147540983606557,
+      "avg_win_pct": 3.7788824048485106,
+      "avg_loss_pct": -1.3374772681088472,
+      "profit_factor": 1.2781483932494544,
+      "final_equity": 973.1801885623826,
+      "years_tested": 1.998631074606434,
+      "buy_hold_return_pct": 556.3362181314369
+    },
+    "2022 (bear/crash)": {
+      "total_return_pct": -19.081501663999344,
+      "cagr_pct": -19.140315067502623,
+      "max_drawdown_pct": -19.63524147709812,
+      "sharpe_ratio": -3.129448070510399,
+      "num_trades": 25,
+      "win_rate_pct": 12.0,
+      "avg_win_pct": 1.4354299275088986,
+      "avg_loss_pct": -0.9230502238692423,
+      "profit_factor": 0.21205828198578347,
+      "final_equity": 809.1849833600065,
+      "years_tested": 0.9965776865160849,
+      "buy_hold_return_pct": -64.48076012596466
+    },
+    "2023-2025 (recuperacion/bull)": {
+      "total_return_pct": -17.503459754279092,
+      "cagr_pct": -6.21655831265624,
+      "max_drawdown_pct": -21.0906945229955,
+      "sharpe_ratio": -0.7860747280234727,
+      "num_trades": 78,
+      "win_rate_pct": 28.205128205128204,
+      "avg_win_pct": 2.243288941413114,
+      "avg_loss_pct": -0.8778264218962608,
+      "profit_factor": 1.0039480040061144,
+      "final_equity": 824.965402457209,
+      "years_tested": 2.9979466119096507,
+      "buy_hold_return_pct": 433.66523363049214
+    },
+    "2026 YTD": {
+      "total_return_pct": -8.914885262207905,
+      "cagr_pct": -12.51887123959724,
+      "max_drawdown_pct": -10.898562232263565,
+      "sharpe_ratio": -1.7692198465463065,
+      "num_trades": 21,
+      "win_rate_pct": 19.047619047619047,
+      "avg_win_pct": 1.7300318035489426,
+      "avg_loss_pct": -0.7023810409045513,
+      "profit_factor": 0.5795519568597178,
+      "final_equity": 910.8511473779209,
+      "years_tested": 0.6981519507186859,
+      "buy_hold_return_pct": -11.854694565987645
+    }
+  }
+}

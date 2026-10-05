@@ -1,0 +1,21 @@
+# Secretos: NUNCA subir credenciales
+.env
+*.env
+!.env.example
+
+# Entornos y cachés
+venv/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Datos grandes (se descargan, ver README)
+data/bitcoin_hourly_indicators.csv
+data/*_hourly_*.csv
+
+# Estado y logs locales del bot
+bot/state.json
+bot/trade_log.csv
+bot/bot.log
+bot/cron.log

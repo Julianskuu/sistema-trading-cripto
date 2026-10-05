@@ -1,0 +1,140 @@
+{
+ "2018": {
+  "cash": {
+   "final": 105000,
+   "contributed": 105000,
+   "profit": 0,
+   "mult": 1.0,
+   "maxdd_pct": 0.0,
+   "maxdd_usd": 0,
+   "worst_vs_contrib": 0,
+   "worst_date": "2018-01-01",
+   "worst_vs_contrib_pct": 0.0
+  },
+  "bh": {
+   "final": 500721,
+   "contributed": 105000,
+   "profit": 395721,
+   "mult": 4.77,
+   "maxdd_pct": -74.8,
+   "maxdd_usd": -412603,
+   "worst_vs_contrib": -7320,
+   "worst_date": "2020-03-12",
+   "worst_vs_contrib_pct": -55.9
+  },
+  "full": {
+   "final": 389496,
+   "contributed": 105000,
+   "profit": 284496,
+   "mult": 3.71,
+   "maxdd_pct": -50.9,
+   "maxdd_usd": -159728,
+   "worst_vs_contrib": -1085,
+   "worst_date": "2019-04-04",
+   "worst_vs_contrib_pct": -38.5
+  },
+  "half": {
+   "final": 491090,
+   "contributed": 105000,
+   "profit": 386090,
+   "mult": 4.68,
+   "maxdd_pct": -59.1,
+   "maxdd_usd": -249847,
+   "worst_vs_contrib": -4070,
+   "worst_date": "2018-12-15",
+   "worst_vs_contrib_pct": -37.4
+  }
+ },
+ "2021pico": {
+  "cash": {
+   "final": 59000,
+   "contributed": 59000,
+   "profit": 0,
+   "mult": 1.0,
+   "maxdd_pct": 0.0,
+   "maxdd_usd": 0,
+   "worst_vs_contrib": 0,
+   "worst_date": "2021-11-01",
+   "worst_vs_contrib_pct": 0.0
+  },
+  "bh": {
+   "final": 106533,
+   "contributed": 59000,
+   "profit": 47533,
+   "mult": 1.81,
+   "maxdd_pct": -49.1,
+   "maxdd_usd": -75459,
+   "worst_vs_contrib": -6241,
+   "worst_date": "2022-11-21",
+   "worst_vs_contrib_pct": -56.4
+  },
+  "full": {
+   "final": 87390,
+   "contributed": 59000,
+   "profit": 28390,
+   "mult": 1.48,
+   "maxdd_pct": -29.6,
+   "maxdd_usd": -23799,
+   "worst_vs_contrib": -1371,
+   "worst_date": "2023-03-10",
+   "worst_vs_contrib_pct": -26.9
+  },
+  "half": {
+   "final": 98806,
+   "contributed": 59000,
+   "profit": 39806,
+   "mult": 1.67,
+   "maxdd_pct": -34.2,
+   "maxdd_usd": -41282,
+   "worst_vs_contrib": -3672,
+   "worst_date": "2022-11-21",
+   "worst_vs_contrib_pct": -33.9
+  }
+ },
+ "2023": {
+  "cash": {
+   "final": 45000,
+   "contributed": 45000,
+   "profit": 0,
+   "mult": 1.0,
+   "maxdd_pct": 0.0,
+   "maxdd_usd": 0,
+   "worst_vs_contrib": 0,
+   "worst_date": "2023-01-01",
+   "worst_vs_contrib_pct": 0.0
+  },
+  "bh": {
+   "final": 68844,
+   "contributed": 45000,
+   "profit": 23844,
+   "mult": 1.53,
+   "maxdd_pct": -46.6,
+   "maxdd_usd": -43239,
+   "worst_vs_contrib": -82,
+   "worst_date": "2023-03-10",
+   "worst_vs_contrib_pct": -2.7
+  },
+  "full": {
+   "final": 55556,
+   "contributed": 45000,
+   "profit": 10556,
+   "mult": 1.23,
+   "maxdd_pct": -25.5,
+   "maxdd_usd": -11796,
+   "worst_vs_contrib": -502,
+   "worst_date": "2023-10-18",
+   "worst_vs_contrib_pct": -11.1
+  },
+  "half": {
+   "final": 62703,
+   "contributed": 45000,
+   "profit": 17703,
+   "mult": 1.39,
+   "maxdd_pct": -32.3,
+   "maxdd_usd": -22828,
+   "worst_vs_contrib": -236,
+   "worst_date": "2023-09-11",
+   "worst_vs_contrib_pct": -6.9
+  }
+ }
+}

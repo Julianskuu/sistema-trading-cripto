@@ -1,0 +1,143 @@
+{
+  "BTC": {
+    "2018": {
+      "strategy_pct": 0.0,
+      "buy_hold_pct": -72.13,
+      "num_trades_closed_in_year": 0
+    },
+    "2019": {
+      "strategy_pct": 18.03,
+      "buy_hold_pct": 91.7,
+      "num_trades_closed_in_year": 18
+    },
+    "2020": {
+      "strategy_pct": 47.25,
+      "buy_hold_pct": 303.3,
+      "num_trades_closed_in_year": 26
+    },
+    "2021": {
+      "strategy_pct": -12.18,
+      "buy_hold_pct": 59.45,
+      "num_trades_closed_in_year": 29
+    },
+    "2022": {
+      "strategy_pct": 0.0,
+      "buy_hold_pct": -64.22,
+      "num_trades_closed_in_year": 0
+    },
+    "2023": {
+      "strategy_pct": 25.63,
+      "buy_hold_pct": 155.76,
+      "num_trades_closed_in_year": 21
+    },
+    "2024": {
+      "strategy_pct": 24.03,
+      "buy_hold_pct": 120.89,
+      "num_trades_closed_in_year": 28
+    },
+    "2025": {
+      "strategy_pct": -11.39,
+      "buy_hold_pct": -6.29,
+      "num_trades_closed_in_year": 28
+    },
+    "2026": {
+      "strategy_pct": 3.07,
+      "buy_hold_pct": -11.7,
+      "num_trades_closed_in_year": 1
+    }
+  },
+  "ETH": {
+    "2018": {
+      "strategy_pct": 0.0,
+      "buy_hold_pct": -82.59,
+      "num_trades_closed_in_year": 0
+    },
+    "2019": {
+      "strategy_pct": 2.53,
+      "buy_hold_pct": -1.74,
+      "num_trades_closed_in_year": 15
+    },
+    "2020": {
+      "strategy_pct": 24.28,
+      "buy_hold_pct": 470.16,
+      "num_trades_closed_in_year": 32
+    },
+    "2021": {
+      "strategy_pct": 32.93,
+      "buy_hold_pct": 399.2,
+      "num_trades_closed_in_year": 36
+    },
+    "2022": {
+      "strategy_pct": -3.32,
+      "buy_hold_pct": -67.46,
+      "num_trades_closed_in_year": 2
+    },
+    "2023": {
+      "strategy_pct": 13.44,
+      "buy_hold_pct": 90.77,
+      "num_trades_closed_in_year": 17
+    },
+    "2024": {
+      "strategy_pct": 9.91,
+      "buy_hold_pct": 46.27,
+      "num_trades_closed_in_year": 23
+    },
+    "2025": {
+      "strategy_pct": 3.96,
+      "buy_hold_pct": -10.97,
+      "num_trades_closed_in_year": 19
+    },
+    "2026": {
+      "strategy_pct": 2.49,
+      "buy_hold_pct": -15.15,
+      "num_trades_closed_in_year": 2
+    }
+  },
+  "BNB": {
+    "2018": {
+      "strategy_pct": -3.73,
+      "buy_hold_pct": -27.68,
+      "num_trades_closed_in_year": 3
+    },
+    "2019": {
+      "strategy_pct": 12.05,
+      "buy_hold_pct": 124.45,
+      "num_trades_closed_in_year": 18
+    },
+    "2020": {
+      "strategy_pct": 0.63,
+      "buy_hold_pct": 172.37,
+      "num_trades_closed_in_year": 35
+    },
+    "2021": {
+      "strategy_pct": 36.41,
+      "buy_hold_pct": 1268.89,
+      "num_trades_closed_in_year": 33
+    },
+    "2022": {
+      "strategy_pct": -3.97,
+      "buy_hold_pct": -51.84,
+      "num_trades_closed_in_year": 10
+    },
+    "2023": {
+      "strategy_pct": 5.45,
+      "buy_hold_pct": 26.59,
+      "num_trades_closed_in_year": 14
+    },
+    "2024": {
+      "strategy_pct": 1.43,
+      "buy_hold_pct": 125.24,
+      "num_trades_closed_in_year": 32
+    },
+    "2025": {
+      "strategy_pct": 4.65,
+      "buy_hold_pct": 23.07,
+      "num_trades_closed_in_year": 40
+    },
+    "2026": {
+      "strategy_pct": 4.57,
+      "buy_hold_pct": -15.97,
+      "num_trades_closed_in_year": 5
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "out_of_sample": {
+    "train_2018_2022": {
+      "total_return_pct": -40.24098842919705,
+      "cagr_pct": -9.790962008666003,
+      "max_drawdown_pct": -41.576096847584296,
+      "sharpe_ratio": -0.9548993641506023,
+      "num_trades": 141,
+      "win_rate_pct": 25.53191489361702,
+      "avg_win_pct": 3.0383482373304362,
+      "avg_loss_pct": -1.243820567916647,
+      "profit_factor": 0.8375158141989811,
+      "final_equity": 597.5901157080294,
+      "years_tested": 4.996577686516085,
+      "buy_hold_pct": 21.171258666576765
+    },
+    "test_2023_hoy": {
+      "total_return_pct": -24.85793166247626,
+      "cagr_pct": -7.43552305223949,
+      "max_drawdown_pct": -28.524945034269532,
+      "sharpe_ratio": -0.964057726883642,
+      "num_trades": 99,
+      "win_rate_pct": 26.262626262626267,
+      "avg_win_pct": 2.164326304818626,
+      "avg_loss_pct": -0.8369692783776436,
+      "profit_factor": 0.9210086488194418,
+      "final_equity": 751.4206833752373,
+      "years_tested": 3.698836413415469,
+      "buy_hold_pct": 367.7514809015599
+    }
+  },
+  "baseline_sma_cross": {
+    "total_return_pct": -99.97728752076812,
+    "cagr_pct": -61.88544548333934,
+    "max_drawdown_pct": -99.98057155043678,
+    "sharpe_ratio": -2.3935445937643625,
+    "num_trades": 3265,
+    "win_rate_pct": 34.67075038284839,
+    "avg_win_pct": 2.278664661487107,
+    "avg_loss_pct": -1.2840660331660034,
+    "profit_factor": 0.9417781942156869,
+    "final_equity": 0.227124792318772,
+    "years_tested": 8.698151950718685,
+    "buy_hold_pct": 466.4621895736472
+  }
+}

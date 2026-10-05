@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Proyecto personal de Brayan Julián Abella Martínez: de una estrategia de trading que perdía a una regla SMA 200 validada en BTC, ETH y BNB y un bot automatizado en el testnet de Binance.">
+<meta property="og:title" content="Señal SMA 200: sistema de trading algorítmico para cripto">
+<meta property="og:description" content="Backtest, validación en 3 criptomonedas y bot automatizado en Python.">
+<title>Señal SMA 200</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f5f6f4; --surface:#fcfcfb; --ink:#14181c; --ink-2:#4b535a; --muted:#7d858b; --grid:#dfe2de; --rule:#cfd4d0;
+  --accent:#1c5cab; --accent-wash:rgba(42,120,214,.08);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --neg:#e34948; --in-wash:rgba(27,175,122,.12);
+  --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --sans:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#111416; --surface:#171b1e; --ink:#eef1f2; --ink-2:#b9c0c5; --muted:#8a9399; --grid:#262b2f; --rule:#343a3e;
+    --accent:#86b6ef; --accent-wash:rgba(57,135,229,.12);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --neg:#e66767; --in-wash:rgba(25,158,112,.16);}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#111416; --surface:#171b1e; --ink:#eef1f2; --ink-2:#b9c0c5; --muted:#8a9399; --grid:#262b2f; --rule:#343a3e;
+  --accent:#86b6ef; --accent-wash:rgba(57,135,229,.12);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --neg:#e66767; --in-wash:rgba(25,158,112,.16);}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:clamp(28px,6vw,64px) 72px}
+.prose{max-width:680px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(34px,6vw,58px);font-weight:700}
+h2{font-size:clamp(26px,3.6vw,36px);font-weight:700}
+h3{font-size:20px;font-weight:600;font-family:var(--sans);letter-spacing:0}
+p{margin:0}
+a{color:var(--accent)}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:clamp(18px,2.2vw,21px);color:var(--ink-2);max-width:680px}
+section{display:grid;gap:22px;padding-block:56px;border-top:1px solid var(--rule)}
+header.hero{display:grid;gap:22px;padding-bottom:40px}
+.byline{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14.5px;color:var(--muted)}
+.byline b{color:var(--ink);font-weight:600}
+code,.mono{font-family:var(--mono);font-size:.88em}
+code{background:var(--accent-wash);padding:.1em .35em;border-radius:4px}
+
+/* figures */
+.fig{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:clamp(14px,2.4vw,24px);display:grid;gap:12px}
+.fig-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 20px}
+.fig-title{font-weight:600;font-size:16px}
+.fig-note{font-size:13px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.key{width:16px;height:3px;border-radius:2px;display:inline-block}
+.key.box{height:12px;width:12px;border-radius:3px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--mono);font-size:11.5px;fill:var(--muted)}
+.chart .lbl{fill:var(--ink);font-size:12px}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.45;box-shadow:0 4px 18px rgba(0,0,0,.08);min-width:150px;z-index:2}
+.tip .d{font-family:var(--mono);color:var(--muted);font-size:11.5px;margin-bottom:2px}
+.tip .r{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tip .r i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+.tip .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--grid);border:1px solid var(--grid);border-radius:10px;overflow:hidden}
+.stat{background:var(--surface);padding:16px 18px;display:grid;gap:2px;align-content:start}
+.stat .n{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .t{font-size:13.5px;color:var(--ink-2);line-height:1.4}
+@media (max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* the rule */
+.rule-box{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--grid);border:1px solid var(--grid);border-radius:10px;overflow:hidden}
+.rule-box div{background:var(--surface);padding:18px 20px;display:grid;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;font-weight:500;letter-spacing:.04em;padding:3px 10px;border-radius:999px;width:max-content}
+.pill.in{background:var(--in-wash);color:var(--ink)}
+.pill.out{background:var(--accent-wash);color:var(--ink)}
+.pill i{width:8px;height:8px;border-radius:50%}
+@media (max-width:600px){.rule-box{grid-template-columns:1fr}}
+
+/* stages */
+ol.stages{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:st}
+ol.stages li{display:grid;grid-template-columns:56px 1fr;gap:4px 18px;padding-block:22px;border-top:1px solid var(--grid);counter-increment:st}
+ol.stages li:first-child{border-top:0}
+ol.stages li::before{content:counter(st,decimal-leading-zero);font-family:var(--mono);font-size:14px;color:var(--muted);padding-top:3px;grid-row:span 3}
+ol.stages .res{font-family:var(--mono);font-size:13.5px;color:var(--ink-2)}
+ol.stages .res b{color:var(--ink);font-weight:500}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--grid);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--grid)}
+th{font-weight:600;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.grp td{border-top:2px solid var(--rule)}
+tr:last-child td{border-bottom:0}
+td .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:1px}
+
+/* segmented control */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.seg button{font:500 13px var(--mono);background:transparent;color:var(--ink-2);border:0;padding:6px 14px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible,.toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toggles{display:flex;flex-wrap:wrap;gap:8px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font:500 13px var(--sans);color:var(--ink-2);background:var(--surface);border:1px solid var(--rule);border-radius:999px;padding:5px 12px;cursor:pointer}
+.toggle[aria-pressed="false"]{opacity:.45}
+.toggle i{width:14px;height:3px;border-radius:2px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:20px 22px;display:grid;gap:10px;align-content:start}
+.card .tag{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+ul.plain{margin:0;padding-left:1.1em;display:grid;gap:10px}
+ul.plain li::marker{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font-size:14px;border:1px solid var(--rule);border-radius:999px;padding:5px 12px;background:var(--surface)}
+.mermaid-box{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:18px;overflow-x:auto}
+footer{border-top:1px solid var(--rule);padding-top:28px;display:grid;gap:10px;font-size:14px;color:var(--muted)}
+.disclaimer{font-size:13.5px;color:var(--muted);max-width:680px}
+@media (prefers-reduced-motion:no-preference){.chart path.ln{transition:opacity .2s}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Proyecto personal independiente · Septiembre 2026</div>
+  <h1>Una sola línea en el gráfico decidió cuándo tener Bitcoin</h1>
+  <p class="lede">Diseñé, probé y automaticé una estrategia de trading para cripto. Empecé con cuatro indicadores que perdían plata y terminé con una regla simple, validada en 8,7 años de datos y en tres criptomonedas, que hoy ejecuta un bot solo, todos los días.</p>
+  <div class="byline"><span><b>Brayan Julián Abella Martínez</b></span><span>Estudiante de Ingeniería de Sistemas y Computación</span><span>Python · pandas · API de Binance · launchd</span></div>
+
+  <figure class="fig" style="margin:8px 0 0">
+    <div class="fig-head">
+      <div class="fig-title">Precio de BTC y su media de 200 días, 2018–2026</div>
+      <div class="legend">
+        <span><i class="key" style="background:var(--s1)"></i>Precio (cierre semanal)</span>
+        <span><i class="key" style="background:var(--s2)"></i>Media de 200 días</span>
+        <span><i class="key box" style="background:var(--in-wash);outline:1px solid var(--s3)"></i>Zona COMPRADO</span>
+      </div>
+    </div>
+    <div class="chart" id="c-hero"></div>
+    <div class="fig-note">Escala logarítmica en dólares. Las franjas marcan las semanas en que el precio cerró por encima de la media: ahí la regla está dentro de BTC.</div>
+  </figure>
+
+  <div class="stats" role="list">
+    <div class="stat" role="listitem"><span class="n">9,3%</span><span class="t">retorno anual compuesto en BTC (versión conservadora)</span></div>
+    <div class="stat" role="listitem"><span class="n">−18%</span><span class="t">peor caída, contra −81% de comprar y mantener</span></div>
+    <div class="stat" role="listitem"><span class="n">3 de 3</span><span class="t">criptos con resultado positivo: BTC, ETH y BNB</span></div>
+    <div class="stat" role="listitem"><span class="n">8,7 años</span><span class="t">de datos diarios, de enero 2018 a septiembre 2026</span></div>
+  </div>
+</header>
+
+<section id="regla">
+  <div class="eyebrow">La regla</div>
+  <h2>Estar dentro cuando hay tendencia, afuera cuando se rompe</h2>
+  <p class="prose">La media de 200 días es el promedio del precio de cierre de los últimos 200 días. Suaviza el ruido y muestra la tendencia de fondo. Cada día, después del cierre, la regla hace una sola pregunta:</p>
+  <div class="rule-box">
+    <div><span class="pill in"><i style="background:var(--s3)"></i>COMPRADO</span><p>Si el precio de cierre está <b>por encima</b> de la media, se tiene BTC.</p></div>
+    <div><span class="pill out"><i style="background:var(--s1)"></i>FUERA</span><p>Si cierra <b>por debajo</b>, se pasa a efectivo (USDT) y se espera.</p></div>
+  </div>
+  <p class="prose">No predice nada: reacciona. No intenta adivinar el techo ni el piso. Su trabajo es mantenerte dentro de las subidas largas y sacarte antes de los desplomes grandes, como el −72% de 2018 o el −64% de 2022.</p>
+  <p class="prose">La regla no es nueva. Es la idea de seguir la tendencia con una media móvil que popularizó Mebane Faber en 2007 para acciones y bonos, y que muchos han probado en Bitcoin. Lo que aporta este proyecto es el proceso completo: probarla con costos reales, validarla en varios periodos y activos, encontrar sus errores y llevarla a un bot que funciona solo.</p>
+</section>
+
+<section id="proceso">
+  <div class="eyebrow">Cómo llegué aquí</div>
+  <h2>Cinco etapas, y la primera fue un fracaso útil</h2>
+  <ol class="stages">
+    <li><h3>Una estrategia compleja que perdía</h3>
+      <p>Combiné tendencia (SMA 200), fuerza de tendencia (ADX), momentum (MACD) y sobreventa (RSI) en velas de 1 hora, con stop-loss y take-profit por volatilidad (ATR).</p>
+      <p class="res">Resultado: <b>−55%</b> en 8,7 años · comprar y mantener: <b>+466%</b> · 240 operaciones, 25,8% de aciertos</p></li>
+    <li><h3>Quitar filtros y bajar la velocidad</h3>
+      <p>Dejé solo la media de 200 periodos y la probé en tres temporalidades. Con velas de 1 hora la señal cambia miles de veces y las comisiones se comen todo.</p>
+      <p class="res">1 hora: <b>−65,2%</b> anual · 4 horas: <b>−4,4%</b> anual · diaria: <b>+9,3%</b> anual</p></li>
+    <li><h3>Validar sin hacer trampa</h3>
+      <p>Sin optimizar parámetros (200 días es el valor estándar). Medí por separado 2018–2022 y 2023–2026, la apliqué sin cambios a ETH y BNB, y calculé el resultado año por año sin mirar el futuro.</p>
+      <p class="res">Positiva en los dos periodos y en los tres activos, <b>más débil en los años recientes</b></p></li>
+    <li><h3>Entender el dial del riesgo</h3>
+      <p>La versión conservadora arriesga 2% del capital por operación y deja casi todo quieto. Con la misma señal pero 100% invertido, el retorno sube mucho, y las caídas también.</p>
+      <p class="res">BTC 100% invertido: <b>31,1%</b> anual con caída máx. <b>−64%</b></p></li>
+    <li><h3>Llevarlo al mundo real</h3>
+      <p>Un bot en Python lee el precio real de Binance, calcula la señal y opera con dinero ficticio en el testnet. Corre solo en mi Mac, con reintentos y notificaciones.</p>
+      <p class="res">Corriendo desde el <b>14-sep-2026</b></p></li>
+  </ol>
+  <figure class="fig" style="margin:0">
+    <div class="fig-head"><div class="fig-title">La misma regla en tres temporalidades (BTC, retorno anual compuesto)</div></div>
+    <div class="chart" id="c-tf"></div>
+  </figure>
+</section>
+
+<section id="resultados">
+  <div class="eyebrow">Resultados</div>
+  <h2>Qué habrían hecho US$1.000 desde 2018</h2>
+  <p class="prose">Misma señal, dos tamaños de posición, contra simplemente comprar y mantener. Incluye comisión de 0,1% y deslizamiento de 0,05% por operación. Pasa el cursor o el dedo sobre el gráfico para ver cada fecha.</p>
+  <figure class="fig" style="margin:0">
+    <div class="fig-head">
+      <div class="fig-title">Valor de la cuenta en BTC, escala logarítmica</div>
+      <div class="toggles" id="eq-toggles"></div>
+    </div>
+    <div class="chart" id="c-eq"></div>
+    <div class="fig-note">Resultados pasados no garantizan resultados futuros.</div>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+    <div class="fig-head">
+      <div class="fig-title">Retorno por año: versión conservadora vs. comprar y mantener</div>
+      <div class="seg" role="group" aria-label="Activo">
+        <button type="button" id="y-BTC" aria-pressed="true">BTC</button><button type="button" id="y-ETH" aria-pressed="false">ETH</button><button type="button" id="y-BNB" aria-pressed="false">BNB</button>
+      </div>
+    </div>
+    <div class="legend"><span><i class="key box" style="background:var(--s2)"></i>Estrategia conservadora</span><span><i class="key box" style="background:var(--s3)"></i>Comprar y mantener</span></div>
+    <div class="chart" id="c-yr"></div>
+    <div class="fig-note">2026 es parcial (hasta septiembre). El patrón se repite en los tres activos: protege en los años de desplome y se queda corta en las subidas fuertes.</div>
+  </figure>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Activo</th><th>Versión</th><th class="num">Anual compuesto</th><th class="num">Peor caída</th><th class="num">Sharpe</th></tr></thead>
+      <tbody id="tbl-res"></tbody>
+    </table>
+  </div>
+  <p class="fig-note">Sharpe: retorno ajustado por riesgo; más alto es mejor. Periodo 2018-01-01 → 2026-09-13.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Activo</th><th class="num">2018–2022</th><th class="num">2023–2026</th></tr></thead>
+      <tbody id="tbl-oos"></tbody>
+    </table>
+  </div>
+  <p class="fig-note">Versión conservadora medida por separado en cada periodo (retorno anual compuesto).</p>
+</section>
+
+<section id="bot">
+  <div class="eyebrow">El bot en vivo</div>
+  <h2>Datos reales, dinero ficticio</h2>
+  <p class="prose">El testnet de Binance no guarda suficiente historial para calcular una media de 200 días, así que el bot lee el precio del mercado real (datos públicos, sin cuenta) y ejecuta las órdenes en el testnet, con dinero de prueba.</p>
+  <div class="mermaid-box">
+<pre class="mermaid">
+flowchart LR
+  A["API pública de Binance<br/>250 velas diarias BTCUSDT"] --> B["Media de 200 días<br/>y señal del día"]
+  B --> C{"¿Cambió la señal?"}
+  C -- "sí" --> D["Orden de mercado<br/>en el testnet"]
+  C -- "sí" --> E["Notificación<br/>en macOS"]
+  C -- "no" --> F["No hace nada"]
+  D --> G["trade_log.csv<br/>state.json"]
+  F --> G
+</pre>
+  </div>
+  <div class="two">
+    <div class="card"><span class="tag">Problema real</span><h3>Cron se saltaba días</h3><p>En dos semanas, cron ejecutó el bot solo 4 de 14 días: macOS no recupera tareas perdidas cuando el equipo está dormido. Lo cambié por launchd, que lo corre cada hora y trabaja una sola vez al día, así que se pone al día apenas se prende el equipo.</p></div>
+    <div class="card"><span class="tag">Problema real</span><h3>Binance a veces no responde</h3><p>Hubo fallos por <code>ReadTimeout</code>. Ahora hay 4 intentos con espera creciente, <b>solo para leer datos</b>. Las órdenes nunca se reintentan, porque repetir una orden tras un timeout podría comprar dos veces.</p></div>
+  </div>
+  <p class="prose">Primera prueba: el bot compró en el testnet a 78.820 el 14 de septiembre. Al 27 de septiembre iba +7,2%, frente a +9,9% que habría dado el backtest en el mismo tramo. La diferencia viene del testnet, que tiene su propio libro de órdenes y cobró ~2,6% más caro al comprar.</p>
+</section>
+
+<section id="errores">
+  <div class="eyebrow">Lo que salió mal</div>
+  <h2>Dos errores que encontré, y por qué importan</h2>
+  <div class="two">
+    <div class="card"><span class="tag">Motor de backtest</span><h3>Dinero que desaparecía</h3><p>La primera versión no llevaba aparte el efectivo no invertido: al cerrar cada operación esa parte se perdía, y el resultado daba −99,99%. Corregido, dio −55%. Un resultado demasiado malo, o demasiado bueno, primero se audita.</p></div>
+    <div class="card"><span class="tag">pandas</span><h3>Un <code>~</code> que no hacía lo que parecía</h3><p><code>serie.shift(1).fillna(False)</code> devuelve una serie de tipo <code>object</code>, y <code>~</code> sobre objetos es el NOT bit a bit de Python: <code>~True</code> es −2 y <code>~False</code> es −1, ambos verdaderos. La regla que creía "solo al cruzar" era "mientras esté por encima". Los resultados publicados corresponden a ese comportamiento real, que ahora está escrito de forma explícita.</p></div>
+  </div>
+</section>
+
+<section id="conclusiones">
+  <div class="eyebrow">Conclusiones</div>
+  <h2>¿Funcionó o no?</h2>
+  <div class="two">
+    <div class="card"><span class="tag">Como sistema técnico</span><h3>Sí funcionó</h3><p>La regla ganó dinero en BTC, ETH y BNB durante casi 9 años, después de comisiones, en los dos periodos medidos por separado. Y evitó los desplomes de 2018 y 2022, cuando Bitcoin cayó más de 60%. El bot calcula y opera solo, pero hasta ahora solo con dinero ficticio.</p></div>
+    <div class="card"><span class="tag">Como forma de hacerse rico</span><h3>No</h3><p>No adivina el futuro: reacciona tarde a propósito. No le gana al mercado en las subidas fuertes, pierde cuando el precio sube y baja sin dirección, y su ganancia es moderada. Lo que ofrece es un camino con caídas menos brutales, no más dinero garantizado.</p></div>
+  </div>
+
+  <h3 style="margin-top:8px">¿Y si invierto US$1.000 cada mes?</h3>
+  <p class="prose">Simulé a alguien que aporta US$1.000 al mes a Bitcoin con cuatro comportamientos. La regla 100% tiene todo en BTC con COMPRADO y todo en efectivo con FUERA; la regla del 50% vende solo la mitad con FUERA. Incluye costos de 0,15% por operación y no incluye impuestos.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Empezando en…</th><th class="num">Aportado</th><th class="num">Comprar y mantener</th><th class="num">Regla del 50%</th><th class="num">Regla 100%</th></tr></thead>
+      <tbody id="tbl-dca"></tbody>
+    </table>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Peor caída de la cuenta</th><th class="num">Comprar y mantener</th><th class="num">Regla del 50%</th><th class="num">Regla 100%</th></tr></thead>
+      <tbody id="tbl-dcadd"></tbody>
+    </table>
+  </div>
+  <ul class="plain prose">
+    <li><b>Invertir cada mes le ganó a solo ahorrar en todos los casos,</b> incluso empezando en el pico de noviembre de 2021.</li>
+    <li><b>Comprar y mantener terminó con más dinero en los tres casos.</b> Cuando la regla dice FUERA deja de comprar, y esos son justo los meses en que Bitcoin está más barato.</li>
+    <li><b>Las reglas cambian dinero final por tranquilidad.</b> Desde 2018, comprar y mantener llegó a perder US$412.603 desde su máximo. Aguantar eso sin vender es muy difícil, y quien vende en pánico en el fondo termina peor que cualquier opción de la tabla.</li>
+    <li><b>La regla del 50% fue el mejor punto medio:</b> terminó solo 2% por debajo de comprar y mantener, con una caída bastante menor.</li>
+    <li><b>Con más o menos dinero los porcentajes son los mismos.</b> Con US$100 al mes, divide todo entre 10. Con poco dinero el valor está en aprender; con mucho, lo difícil es aguantar las caídas sin romper las reglas.</li>
+  </ul>
+
+  <h3 style="margin-top:8px">¿Qué puede pasar en el futuro?</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Si el mercado…</th><th>Comprar y mantener</th><th>La regla</th></tr></thead>
+      <tbody>
+        <tr><td>Sube fuerte y por mucho tiempo (2020, 2023–24)</td><td>Gana más</td><td>Gana menos: entra tarde</td></tr>
+        <tr><td>Cae fuerte y por mucho tiempo (2018, 2022)</td><td>Pierde 60–80%</td><td>Sale a tiempo y protege</td></tr>
+        <tr><td>Sube y baja sin dirección (2021, 2025)</td><td>Aguanta sin costos extra</td><td>Pierde: su peor escenario</td></tr>
+        <tr><td>Deja de crecer para siempre</td><td>Pierde</td><td>Pierde menos, pero no gana</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="fig-note">2018–2026 incluye una de las mayores subidas de la historia; estos números son un techo optimista, no una promesa. Nada de esto es una recomendación de inversión.</p>
+
+  <h3 style="margin-top:8px">Lo que me llevo</h3>
+  <ul class="plain prose">
+    <li><b>Lo simple le ganó a lo complejo,</b> y la temporalidad pesó más que las reglas.</li>
+    <li><b>Validar vale más que optimizar.</b> La confianza vino de probar en periodos separados, en otros activos y año por año.</li>
+    <li><b>Retorno y riesgo van juntos.</b> Ninguna configuración dio mucha ganancia con caídas pequeñas.</li>
+    <li><b>La ventaja es pequeña y crece con el capital y el tiempo, no con el esfuerzo.</b> No reemplaza un ingreso; tiene sentido como método disciplinado de largo plazo.</li>
+  </ul>
+  <h3 style="margin-top:10px">Limitaciones</h3>
+  <ul class="plain prose">
+    <li>BTC, ETH y BNB sobrevivieron; muchas criptos de 2018 ya no existen. Además se mueven casi juntas, así que operarlas a la vez diversifica poco.</li>
+    <li>El bot solo se ha probado con dinero ficticio.</li>
+  </ul>
+</section>
+
+<section id="aprendi">
+  <div class="eyebrow">Habilidades</div>
+  <h2>Qué aprendí construyéndolo</h2>
+  <div class="chips">
+    <span>Python y pandas para series de tiempo</span><span>Diseño de un motor de backtesting</span><span>Comisiones, deslizamiento y sesgo de mirar el futuro</span><span>Validación en periodos y activos distintos</span><span>CAGR, drawdown, Sharpe, profit factor</span><span>APIs REST de Binance</span><span>Automatización con launchd</span><span>Errores de red y operaciones que no se repiten</span><span>Depuración de resultados sospechosos</span><span>Comunicar resultados negativos con honestidad</span>
+  </div>
+</section>
+
+<footer>
+  <p><b style="color:var(--ink)">Brayan Julián Abella Martínez</b> · Estudiante de Ingeniería de Sistemas y Computación (Universidad Católica de Colombia). Proyecto personal hecho por mi cuenta; no es un trabajo académico ni está vinculado a la universidad.</p>
+  <p id="repo-link" hidden>Código, datos y resultados: <a id="repo-a" href="#" target="_blank" rel="noopener">repositorio en GitHub</a></p>
+  <p class="disclaimer">Proyecto educativo. Nada de esto es asesoría financiera ni garantía de resultados. El bot opera solo en el testnet de Binance, con dinero ficticio. Desarrollado con asistencia de IA (Claude, de Anthropic) para programación, análisis y revisión; las decisiones de diseño, las pruebas y la operación del bot son del autor.</p>
+</footer>
+</div>
+
+<script>
+const DATA = {"hero":{"dates":["2018-01-07","2018-01-14","2018-01-21","2018-01-28","2018-02-04","2018-02-11","2018-02-18","2018-02-25","2018-03-04","2018-03-11","2018-03-18","2018-03-25","2018-04-01","2018-04-08","2018-04-15","2018-04-22","2018-04-29","2018-05-06","2018-05-13","2018-05-20","2018-05-27","2018-06-03","2018-06-10","2018-06-17","2018-06-24","2018-07-01","2018-07-08","2018-07-15","2018-07-22","2018-07-29","2018-08-05","2018-08-12","2018-08-19","2018-08-26","2018-09-02","2018-09-09","2018-09-16","2018-09-23","2018-09-30","2018-10-07","2018-10-14","2018-10-21","2018-10-28","2018-11-04","2018-11-11","2018-11-18","2018-11-25","2018-12-02","2018-12-09","2018-12-16","2018-12-23","2018-12-30","2019-01-06","2019-01-13","2019-01-20","2019-01-27","2019-02-03","2019-02-10","2019-02-17","2019-02-24","2019-03-03","2019-03-10","2019-03-17","2019-03-24","2019-03-31","2019-04-07","2019-04-14","2019-04-21","2019-04-28","2019-05-05","2019-05-12","2019-05-19","2019-05-26","2019-06-02","2019-06-09","2019-06-16","2019-06-23","2019-06-30","2019-07-07","2019-07-14","2019-07-21","2019-07-28","2019-08-04","2019-08-11","2019-08-18","2019-08-25","2019-09-01","2019-09-08","2019-09-15","2019-09-22","2019-09-29","2019-10-06","2019-10-13","2019-10-20","2019-10-27","2019-11-03","2019-11-10","2019-11-17","2019-11-24","2019-12-01","2019-12-08","2019-12-15","2019-12-22","2019-12-29","2020-01-05","2020-01-12","2020-01-19","2020-01-26","2020-02-02","2020-02-09","2020-02-16","2020-02-23","2020-03-01","2020-03-08","2020-03-15","2020-03-22","2020-03-29","2020-04-05","2020-04-12","2020-04-19","2020-04-26","2020-05-03","2020-05-10","2020-05-17","2020-05-24","2020-05-31","2020-06-07","2020-06-14","2020-06-21","2020-06-28","2020-07-05","2020-07-12","2020-07-19","2020-07-26","2020-08-02","2020-08-09","2020-08-16","2020-08-23","2020-08-30","2020-09-06","2020-09-13","2020-09-20","2020-09-27","2020-10-04","2020-10-11","2020-10-18","2020-10-25","2020-11-01","2020-11-08","2020-11-15","2020-11-22","2020-11-29","2020-12-06","2020-12-13","2020-12-20","2020-12-27","2021-01-03","2021-01-10","2021-01-17","2021-01-24","2021-01-31","2021-02-07","2021-02-14","2021-02-21","2021-02-28","2021-03-07","2021-03-14","2021-03-21","2021-03-28","2021-04-04","2021-04-11","2021-04-18","2021-04-25","2021-05-02","2021-05-09","2021-05-16","2021-05-23","2021-05-30","2021-06-06","2021-06-13","2021-06-20","2021-06-27","2021-07-04","2021-07-11","2021-07-18","2021-07-25","2021-08-01","2021-08-08","2021-08-15","2021-08-22","2021-08-29","2021-09-05","2021-09-12","2021-09-19","2021-09-26","2021-10-03","2021-10-10","2021-10-17","2021-10-24","2021-10-31","2021-11-07","2021-11-14","2021-11-21","2021-11-28","2021-12-05","2021-12-12","2021-12-19","2021-12-26","2022-01-02","2022-01-09","2022-01-16","2022-01-23","2022-01-30","2022-02-06","2022-02-13","2022-02-20","2022-02-27","2022-03-06","2022-03-13","2022-03-20","2022-03-27","2022-04-03","2022-04-10","2022-04-17","2022-04-24","2022-05-01","2022-05-08","2022-05-15","2022-05-22","2022-05-29","2022-06-05","2022-06-12","2022-06-19","2022-06-26","2022-07-03","2022-07-10","2022-07-17","2022-07-24","2022-07-31","2022-08-07","2022-08-14","2022-08-21","2022-08-28","2022-09-04","2022-09-11","2022-09-18","2022-09-25","2022-10-02","2022-10-09","2022-10-16","2022-10-23","2022-10-30","2022-11-06","2022-11-13","2022-11-20","2022-11-27","2022-12-04","2022-12-11","2022-12-18","2022-12-25","2023-01-01","2023-01-08","2023-01-15","2023-01-22","2023-01-29","2023-02-05","2023-02-12","2023-02-19","2023-02-26","2023-03-05","2023-03-12","2023-03-19","2023-03-26","2023-04-02","2023-04-09","2023-04-16","2023-04-23","2023-04-30","2023-05-07","2023-05-14","2023-05-21","2023-05-28","2023-06-04","2023-06-11","2023-06-18","2023-06-25","2023-07-02","2023-07-09","2023-07-16","2023-07-23","2023-07-30","2023-08-06","2023-08-13","2023-08-20","2023-08-27","2023-09-03","2023-09-10","2023-09-17","2023-09-24","2023-10-01","2023-10-08","2023-10-15","2023-10-22","2023-10-29","2023-11-05","2023-11-12","2023-11-19","2023-11-26","2023-12-03","2023-12-10","2023-12-17","2023-12-24","2023-12-31","2024-01-07","2024-01-14","2024-01-21","2024-01-28","2024-02-04","2024-02-11","2024-02-18","2024-02-25","2024-03-03","2024-03-10","2024-03-17","2024-03-24","2024-03-31","2024-04-07","2024-04-14","2024-04-21","2024-04-28","2024-05-05","2024-05-12","2024-05-19","2024-05-26","2024-06-02","2024-06-09","2024-06-16","2024-06-23","2024-06-30","2024-07-07","2024-07-14","2024-07-21","2024-07-28","2024-08-04","2024-08-11","2024-08-18","2024-08-25","2024-09-01","2024-09-08","2024-09-15","2024-09-22","2024-09-29","2024-10-06","2024-10-13","2024-10-20","2024-10-27","2024-11-03","2024-11-10","2024-11-17","2024-11-24","2024-12-01","2024-12-08","2024-12-15","2024-12-22","2024-12-29","2025-01-05","2025-01-12","2025-01-19","2025-01-26","2025-02-02","2025-02-09","2025-02-16","2025-02-23","2025-03-02","2025-03-09","2025-03-16","2025-03-23","2025-03-30","2025-04-06","2025-04-13","2025-04-20","2025-04-27","2025-05-04","2025-05-11","2025-05-18","2025-05-25","2025-06-01","2025-06-08","2025-06-15","2025-06-22","2025-06-29","2025-07-06","2025-07-13","2025-07-20","2025-07-27","2025-08-03","2025-08-10","2025-08-17","2025-08-24","2025-08-31","2025-09-07","2025-09-14","2025-09-21","2025-09-28","2025-10-05","2025-10-12","2025-10-19","2025-10-26","2025-11-02","2025-11-09","2025-11-16","2025-11-23","2025-11-30","2025-12-07","2025-12-14","2025-12-21","2025-12-28","2026-01-04","2026-01-11","2026-01-18","2026-01-25","2026-02-01","2026-02-08","2026-02-15","2026-02-22","2026-03-01","2026-03-08","2026-03-15","2026-03-22","2026-03-29","2026-04-05","2026-04-12","2026-04-19","2026-04-26","2026-05-03","2026-05-10","2026-05-17","2026-05-24","2026-05-31","2026-06-07","2026-06-14","2026-06-21","2026-06-28","2026-07-05","2026-07-12","2026-07-19","2026-07-26","2026-08-02","2026-08-09","2026-08-16","2026-08-23","2026-08-30","2026-09-06","2026-09-13"],"close":[16228,13639,11550,11768,8218,8085,10417,9610,11504,9545,8215,8473,6836,7050,8377,8823,9407,9645,8709,8533,7362,7720,6774,6458,6158,6339,6707,6364,7399,8217,7042,6323,6502,6721,7301,6249,6502,6703,6624,6601,6278,6510,6471,6467,6408,5615,4004,4144,3593,3255,4008,3896,4103,3551,3568,3565,3450,3685,3671,3772,3812,3930,3998,3994,4113,5201,5166,5306,5272,5794,6978,8193,8726,8738,7643,8979,10856,10769,11474,10204,10587,9532,10979,11549,10326,10142,9768,10421,10313,10037,8065,7868,8296,8247,9551,9222,9046,8515,6930,7421,7540,7132,7518,7399,7360,8181,8703,8602,9334,10158,9926,9977,8549,8058,5357,5828,5882,6782,6914,7133,7701,8907,8735,9671,8718,9450,9751,9334,9293,9120,9081,9301,9216,9942,11064,11686,11918,11652,11717,10260,10332,10922,10781,10676,11376,11513,13041,13762,15488,15965,18431,18199,19379,19169,23467,26249,33063,38202,35840,32285,33143,38869,48653,57470,45261,50964,58999,57375,55781,58219,59980,56247,49121,56624,58294,46491,34717,35663,35799,39017,35602,34714,35288,34249,31806,35370,39871,43828,47016,49290,48794,51784,46050,47252,43202,48234,54700,61521,60864,61350,63303,65509,58701,57331,49466,50110,46697,50791,47306,41870,43100,36288,37908,42412,42070,38397,37715,38429,37796,41243,46842,46414,42154,39688,39466,38481,34034,31296,30264,29452,29898,26587,20553,21032,19294,20847,20793,22585,23308,23180,24314,21515,19554,20003,21836,19418,18810,19058,19442,19264,19573,20631,20911,16307,16254,16421,17112,17095,16743,16829,16614,17116,20879,22715,23747,22941,21790,24288,23557,22434,22184,28040,27995,28188,28341,30322,27597,29237,28573,26931,26755,28078,27125,25938,26338,30474,30618,30171,30248,30086,29283,29046,29282,26191,26091,25971,25834,26533,26261,27995,27934,27177,30001,34535,35039,37080,37389,37460,39981,43792,41349,43023,42280,43951,41704,41570,42029,42570,48311,52139,51728,63149,69024,68364,67208,71313,69357,65766,64956,63111,64038,61459,66268,68488,67739,69639,66632,63181,62686,55867,60819,68177,68253,58136,58725,58439,64265,57313,54879,59139,63587,65612,62822,62854,69021,67945,68747,80429,89877,98018,97276,101190,104425,95099,93565,98347,94506,101213,102577,97665,96486,96133,96274,94276,80719,82572,86092,82380,78366,83731,85167,93777,94394,104124,106489,109041,105702,105779,105625,101015,108392,109234,119128,117329,119469,114239,119312,117488,113487,108274,111143,115352,115300,112227,123535,115085,108702,114560,110565,104721,94244,86823,90381,90414,88170,88648,87887,91500,90885,93642,86581,76911,70297,68801,67627,65774,65974,72829,67854,65968,69004,70750,73824,78674,78557,82194,77458,77065,73674,63332,65746,63312,59577,63650,63780,64723,65400,63570,64902,62900,77734,77682,80342,77282],"sma":[6593,6999,7326,7632,7891,8075,8322,8571,8813,9014,9155,9300,9409,9521,9652,9797,9959,10094,10203,10282,10298,10328,10310,10220,10047,9699,9303,9013,8776,8511,8318,8143,7981,7921,7867,7727,7599,7442,7355,7290,7221,7204,7191,7131,7045,6926,6744,6586,6428,6286,6156,6044,5949,5865,5770,5666,5554,5408,5254,5147,5061,4972,4871,4762,4681,4628,4578,4530,4485,4456,4450,4500,4555,4636,4730,4882,5086,5374,5645,5914,6143,6347,6579,6862,7106,7348,7566,7802,8025,8247,8407,8555,8708,8840,8953,9097,9229,9347,9413,9419,9407,9366,9326,9304,9245,9141,9048,8937,8890,8866,8881,8833,8750,8693,8562,8413,8277,8150,8064,8020,7988,7997,8042,8053,8053,8068,8117,8196,8265,8332,8404,8475,8543,8613,8715,8814,8918,9004,9056,9087,9115,9191,9266,9456,9618,9794,9992,10223,10492,10775,11092,11400,11736,12072,12501,13014,13719,14697,15650,16510,17338,18315,19601,21054,22334,23644,25230,26839,28374,30045,31715,33475,34943,36497,38081,39395,40280,41046,41756,42372,43052,43544,44087,44453,44657,44666,44741,44908,45409,45848,46091,46108,45880,45868,45571,45101,45009,45104,45261,45289,45427,45888,46007,46021,46345,46742,47119,47596,47924,48229,48537,48715,48857,49145,49396,49443,49230,49076,48741,48490,48287,48302,48243,48157,47851,47271,46392,45305,44179,42968,41818,40829,39582,38509,37512,36585,35562,34741,34058,33373,32918,32382,31635,30829,30182,29461,28736,28037,27267,26331,25410,24665,23967,23196,22426,21838,21385,20945,20499,20024,19700,19583,19519,19587,19669,19721,19720,19728,19750,19712,19706,19902,20186,20431,20734,21119,21430,21759,22093,22360,22589,22839,23205,23552,23881,24320,24780,25257,25739,26203,26626,26930,27171,27320,27423,27570,27624,27720,27871,28026,28042,28019,28051,28231,28402,28698,28966,29276,29674,30258,30775,31353,31938,32530,33034,33433,33800,34241,34798,35568,36350,37441,38877,40406,41791,43340,44782,46250,47521,48817,50016,51080,52155,53350,54442,55603,56640,57476,58115,58694,59212,60006,60770,61475,62084,62676,63329,63710,63859,64012,63944,63763,63566,63386,63342,63267,63453,63791,64734,65904,67059,68121,69235,70326,71262,72311,73468,74821,76460,77876,78962,80019,81343,82306,83274,83988,84900,85937,86741,87372,88095,89191,90280,91426,92639,93977,94823,95310,95700,95951,96228,96415,97007,97857,98576,99285,99748,100297,100799,101270,101765,102510,103507,104457,105709,106860,107775,108810,109768,110314,110484,110220,109740,109205,108578,107953,107289,106711,106269,105828,105134,103956,102313,100575,98941,97094,95433,93946,92581,91080,89387,87880,86567,84987,83695,82735,81599,80538,79538,78492,77665,76745,75699,74739,73892,73073,72159,71156,70162,69274,69039,69398,69788,70173],"inpos":[1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1]},"eq":{"dates":["2018-01-07","2018-01-14","2018-01-21","2018-01-28","2018-02-04","2018-02-11","2018-02-18","2018-02-25","2018-03-04","2018-03-11","2018-03-18","2018-03-25","2018-04-01","2018-04-08","2018-04-15","2018-04-22","2018-04-29","2018-05-06","2018-05-13","2018-05-20","2018-05-27","2018-06-03","2018-06-10","2018-06-17","2018-06-24","2018-07-01","2018-07-08","2018-07-15","2018-07-22","2018-07-29","2018-08-05","2018-08-12","2018-08-19","2018-08-26","2018-09-02","2018-09-09","2018-09-16","2018-09-23","2018-09-30","2018-10-07","2018-10-14","2018-10-21","2018-10-28","2018-11-04","2018-11-11","2018-11-18","2018-11-25","2018-12-02","2018-12-09","2018-12-16","2018-12-23","2018-12-30","2019-01-06","2019-01-13","2019-01-20","2019-01-27","2019-02-03","2019-02-10","2019-02-17","2019-02-24","2019-03-03","2019-03-10","2019-03-17","2019-03-24","2019-03-31","2019-04-07","2019-04-14","2019-04-21","2019-04-28","2019-05-05","2019-05-12","2019-05-19","2019-05-26","2019-06-02","2019-06-09","2019-06-16","2019-06-23","2019-06-30","2019-07-07","2019-07-14","2019-07-21","2019-07-28","2019-08-04","2019-08-11","2019-08-18","2019-08-25","2019-09-01","2019-09-08","2019-09-15","2019-09-22","2019-09-29","2019-10-06","2019-10-13","2019-10-20","2019-10-27","2019-11-03","2019-11-10","2019-11-17","2019-11-24","2019-12-01","2019-12-08","2019-12-15","2019-12-22","2019-12-29","2020-01-05","2020-01-12","2020-01-19","2020-01-26","2020-02-02","2020-02-09","2020-02-16","2020-02-23","2020-03-01","2020-03-08","2020-03-15","2020-03-22","2020-03-29","2020-04-05","2020-04-12","2020-04-19","2020-04-26","2020-05-03","2020-05-10","2020-05-17","2020-05-24","2020-05-31","2020-06-07","2020-06-14","2020-06-21","2020-06-28","2020-07-05","2020-07-12","2020-07-19","2020-07-26","2020-08-02","2020-08-09","2020-08-16","2020-08-23","2020-08-30","2020-09-06","2020-09-13","2020-09-20","2020-09-27","2020-10-04","2020-10-11","2020-10-18","2020-10-25","2020-11-01","2020-11-08","2020-11-15","2020-11-22","2020-11-29","2020-12-06","2020-12-13","2020-12-20","2020-12-27","2021-01-03","2021-01-10","2021-01-17","2021-01-24","2021-01-31","2021-02-07","2021-02-14","2021-02-21","2021-02-28","2021-03-07","2021-03-14","2021-03-21","2021-03-28","2021-04-04","2021-04-11","2021-04-18","2021-04-25","2021-05-02","2021-05-09","2021-05-16","2021-05-23","2021-05-30","2021-06-06","2021-06-13","2021-06-20","2021-06-27","2021-07-04","2021-07-11","2021-07-18","2021-07-25","2021-08-01","2021-08-08","2021-08-15","2021-08-22","2021-08-29","2021-09-05","2021-09-12","2021-09-19","2021-09-26","2021-10-03","2021-10-10","2021-10-17","2021-10-24","2021-10-31","2021-11-07","2021-11-14","2021-11-21","2021-11-28","2021-12-05","2021-12-12","2021-12-19","2021-12-26","2022-01-02","2022-01-09","2022-01-16","2022-01-23","2022-01-30","2022-02-06","2022-02-13","2022-02-20","2022-02-27","2022-03-06","2022-03-13","2022-03-20","2022-03-27","2022-04-03","2022-04-10","2022-04-17","2022-04-24","2022-05-01","2022-05-08","2022-05-15","2022-05-22","2022-05-29","2022-06-05","2022-06-12","2022-06-19","2022-06-26","2022-07-03","2022-07-10","2022-07-17","2022-07-24","2022-07-31","2022-08-07","2022-08-14","2022-08-21","2022-08-28","2022-09-04","2022-09-11","2022-09-18","2022-09-25","2022-10-02","2022-10-09","2022-10-16","2022-10-23","2022-10-30","2022-11-06","2022-11-13","2022-11-20","2022-11-27","2022-12-04","2022-12-11","2022-12-18","2022-12-25","2023-01-01","2023-01-08","2023-01-15","2023-01-22","2023-01-29","2023-02-05","2023-02-12","2023-02-19","2023-02-26","2023-03-05","2023-03-12","2023-03-19","2023-03-26","2023-04-02","2023-04-09","2023-04-16","2023-04-23","2023-04-30","2023-05-07","2023-05-14","2023-05-21","2023-05-28","2023-06-04","2023-06-11","2023-06-18","2023-06-25","2023-07-02","2023-07-09","2023-07-16","2023-07-23","2023-07-30","2023-08-06","2023-08-13","2023-08-20","2023-08-27","2023-09-03","2023-09-10","2023-09-17","2023-09-24","2023-10-01","2023-10-08","2023-10-15","2023-10-22","2023-10-29","2023-11-05","2023-11-12","2023-11-19","2023-11-26","2023-12-03","2023-12-10","2023-12-17","2023-12-24","2023-12-31","2024-01-07","2024-01-14","2024-01-21","2024-01-28","2024-02-04","2024-02-11","2024-02-18","2024-02-25","2024-03-03","2024-03-10","2024-03-17","2024-03-24","2024-03-31","2024-04-07","2024-04-14","2024-04-21","2024-04-28","2024-05-05","2024-05-12","2024-05-19","2024-05-26","2024-06-02","2024-06-09","2024-06-16","2024-06-23","2024-06-30","2024-07-07","2024-07-14","2024-07-21","2024-07-28","2024-08-04","2024-08-11","2024-08-18","2024-08-25","2024-09-01","2024-09-08","2024-09-15","2024-09-22","2024-09-29","2024-10-06","2024-10-13","2024-10-20","2024-10-27","2024-11-03","2024-11-10","2024-11-17","2024-11-24","2024-12-01","2024-12-08","2024-12-15","2024-12-22","2024-12-29","2025-01-05","2025-01-12","2025-01-19","2025-01-26","2025-02-02","2025-02-09","2025-02-16","2025-02-23","2025-03-02","2025-03-09","2025-03-16","2025-03-23","2025-03-30","2025-04-06","2025-04-13","2025-04-20","2025-04-27","2025-05-04","2025-05-11","2025-05-18","2025-05-25","2025-06-01","2025-06-08","2025-06-15","2025-06-22","2025-06-29","2025-07-06","2025-07-13","2025-07-20","2025-07-27","2025-08-03","2025-08-10","2025-08-17","2025-08-24","2025-08-31","2025-09-07","2025-09-14","2025-09-21","2025-09-28","2025-10-05","2025-10-12","2025-10-19","2025-10-26","2025-11-02","2025-11-09","2025-11-16","2025-11-23","2025-11-30","2025-12-07","2025-12-14","2025-12-21","2025-12-28","2026-01-04","2026-01-11","2026-01-18","2026-01-25","2026-02-01","2026-02-08","2026-02-15","2026-02-22","2026-03-01","2026-03-08","2026-03-15","2026-03-22","2026-03-29","2026-04-05","2026-04-12","2026-04-19","2026-04-26","2026-05-03","2026-05-10","2026-05-17","2026-05-24","2026-05-31","2026-06-07","2026-06-14","2026-06-21","2026-06-28","2026-07-05","2026-07-12","2026-07-19","2026-07-26","2026-08-02","2026-08-09","2026-08-16","2026-08-23","2026-08-30","2026-09-06","2026-09-13"],"cons":[1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1026.9,1024.4,1033.7,1031.5,1059.2,1128.2,1187.2,1204.5,1196.1,1156.0,1202.6,1255.4,1264.2,1257.0,1235.3,1239.0,1222.6,1245.1,1254.0,1235.0,1232.1,1226.3,1236.4,1234.8,1230.5,1196.4,1196.4,1196.4,1196.4,1205.1,1194.8,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1180.3,1176.9,1215.6,1200.8,1188.6,1146.4,1122.7,1122.7,1122.7,1122.7,1122.7,1122.7,1122.7,1122.7,1126.8,1142.2,1169.7,1141.8,1163.2,1169.5,1156.9,1155.7,1150.5,1149.3,1155.9,1153.4,1175.2,1255.0,1278.4,1287.1,1272.7,1275.1,1253.3,1255.9,1276.8,1271.8,1268.1,1292.9,1297.4,1360.3,1400.1,1445.2,1459.1,1533.6,1529.6,1554.2,1549.8,1628.8,1689.2,1772.1,1754.2,1720.9,1693.0,1698.6,1736.1,1765.5,1830.5,1725.0,1757.2,1800.7,1787.6,1777.9,1792.7,1803.4,1780.8,1726.9,1777.9,1789.2,1705.4,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1655.5,1629.5,1630.0,1625.6,1652.3,1589.2,1579.5,1546.5,1546.5,1606.6,1668.4,1663.4,1667.1,1682.1,1699.0,1648.3,1638.2,1570.0,1573.9,1537.6,1551.0,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1526.3,1580.4,1646.2,1680.3,1653.6,1615.0,1671.6,1646.6,1620.2,1617.5,1706.5,1705.7,1709.2,1712.0,1748.1,1698.4,1728.3,1716.2,1686.3,1683.1,1707.2,1689.9,1665.5,1676.2,1786.7,1790.0,1779.8,1781.6,1777.9,1757.2,1750.0,1757.2,1718.2,1718.2,1702.5,1702.5,1702.5,1702.5,1702.5,1702.5,1702.5,1746.4,1798.8,1809.8,1844.0,1836.2,1837.7,1895.2,1978.2,1900.8,1930.9,1917.5,1947.7,1953.8,1952.3,1955.7,1963.4,2058.0,2117.7,2110.2,2251.7,2248.1,2225.1,2229.6,2261.2,2246.1,2218.4,2212.2,2198.0,2205.1,2185.3,2222.3,2239.4,2233.6,2248.3,2225.1,2198.5,2194.7,2150.6,2169.1,2250.6,2251.5,2132.2,2132.2,2132.2,2133.0,2118.4,2118.4,2118.4,2118.4,2105.4,2075.3,2075.3,2112.5,2098.5,2100.0,2245.8,2287.8,2362.0,2352.3,2439.3,2464.6,2391.6,2379.6,2417.0,2387.0,2424.4,2435.9,2365.4,2314.9,2286.6,2287.6,2184.5,2087.9,2063.1,2043.3,2030.1,2030.1,2030.1,2030.1,2031.3,2036.1,2116.1,2138.9,2163.5,2131.4,2132.1,2130.6,2063.3,2129.6,2138.8,2242.0,2223.2,2245.6,2188.3,2239.9,2248.6,2220.3,2166.1,2191.3,2228.2,2227.8,2200.8,2308.6,2218.7,2157.0,2178.5,2138.8,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2107.3,2178.3,2177.6,2214.4,2172.1],"full":[1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1058.4,1051.2,1079.7,1072.9,1179.1,1419.9,1667.2,1775.7,1778.1,1555.4,1827.2,2209.1,2191.4,2334.9,2076.5,2154.3,1939.6,2234.1,2350.1,2101.3,2063.8,1987.8,2120.6,2098.6,2042.4,1640.7,1640.7,1640.7,1640.7,1689.9,1631.7,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1549.9,1538.0,1673.7,1635.5,1644.0,1425.7,1285.9,1284.0,1284.0,1284.0,1284.0,1284.0,1284.0,1284.0,1299.9,1274.8,1411.3,1272.3,1379.2,1423.0,1362.1,1356.2,1331.0,1325.3,1357.3,1345.0,1450.9,1614.6,1705.5,1739.3,1700.4,1709.9,1497.4,1507.9,1593.9,1573.4,1557.9,1660.1,1680.2,1903.2,2008.3,2260.3,2329.8,2689.7,2655.9,2828.1,2797.5,3424.7,3830.7,4825.2,5575.1,5230.3,4711.6,4836.8,5672.4,7100.2,8387.0,6605.2,7437.5,8610.1,8373.1,8140.5,8496.3,8753.3,8208.5,7168.5,8263.4,8507.3,6784.7,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4914.3,4614.5,4609.3,4563.0,4842.6,4188.1,4081.1,3701.9,3701.6,4197.9,4721.3,4670.9,4708.2,4858.0,5027.4,4504.9,4399.8,3796.1,3845.6,3406.2,3531.3,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3300.0,3451.9,3755.4,3926.1,3792.8,3602.5,4015.4,3894.7,3709.0,3667.6,4635.9,4628.4,4660.2,4685.5,5013.1,4562.5,4833.7,4723.9,4452.5,4423.4,4642.0,4484.6,4288.2,4354.4,5038.2,5062.0,4988.2,5000.9,4974.0,4841.4,4802.2,4841.1,4396.0,4396.0,4316.5,4316.5,4316.5,4316.5,4316.5,4316.5,4316.5,4534.2,5219.4,5295.6,5603.9,5650.6,5661.4,6042.4,6618.3,6249.2,6502.1,6389.9,6642.3,6302.8,6282.6,6351.9,6433.7,7301.3,7879.9,7817.7,9543.9,10431.6,10332.0,10157.3,10777.6,10482.1,9939.2,9816.9,9538.1,9678.1,9288.4,10015.2,10350.7,10237.4,10524.7,10070.1,9548.6,9473.8,8607.8,8825.6,9893.4,9904.4,8792.1,8792.1,8792.1,8803.2,8596.5,8596.5,8596.5,8596.5,8462.3,8153.8,8153.8,8505.6,8373.1,8471.9,9911.5,11075.8,12079.0,11987.6,12469.9,12868.5,11719.3,11530.2,12119.6,11646.2,12472.7,12640.8,12035.5,11890.2,11846.7,11864.1,11617.9,9947.2,9419.6,9085.4,8879.0,8879.0,8879.0,8879.0,8893.6,8952.1,9874.9,10099.1,10341.2,10024.5,10031.8,10017.2,9580.1,10279.6,10359.5,11297.8,11127.2,11330.1,10834.1,11315.2,11142.3,10762.8,10268.4,10540.5,10939.7,10934.8,10643.3,11715.8,10914.4,10083.7,10338.5,9834.2,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,9465.6,10597.2,10590.1,10952.7,10535.6],"bh":[1207.0,1014.4,859.1,875.3,611.2,601.3,774.8,714.8,855.7,709.9,611.0,630.2,508.4,524.4,623.0,656.3,699.7,717.4,647.8,634.7,547.6,574.2,503.8,480.3,458.0,471.5,498.9,473.4,550.3,611.1,523.8,470.3,483.6,499.9,543.1,464.8,483.6,498.5,492.7,491.0,466.9,484.2,481.3,481.0,476.6,417.7,297.8,308.2,267.2,242.1,298.1,289.8,305.2,264.1,265.4,265.2,256.6,274.1,273.0,280.5,283.6,292.3,297.4,297.1,305.9,386.9,384.2,394.6,392.2,431.0,519.0,609.4,649.0,649.9,568.5,667.9,807.4,801.0,853.4,759.0,787.4,709.0,816.6,859.0,768.0,754.3,726.5,775.1,767.1,746.5,599.9,585.2,617.1,613.4,710.4,685.9,672.8,633.3,515.4,551.9,560.8,530.5,559.1,550.4,547.4,608.5,647.3,639.8,694.3,755.5,738.2,742.1,635.9,599.3,398.4,433.5,437.5,504.4,514.2,530.5,572.8,662.5,649.7,719.3,648.5,702.9,725.2,694.2,691.2,678.4,675.5,691.8,685.5,739.5,822.9,869.2,886.4,866.6,871.4,763.1,768.5,812.3,801.9,794.0,846.1,856.3,970.0,1023.6,1152.0,1187.4,1370.8,1353.6,1441.4,1425.8,1745.4,1952.4,2459.2,2841.4,2665.7,2401.3,2465.1,2891.0,3618.7,4274.5,3366.4,3790.6,4388.2,4267.4,4148.9,4330.2,4461.2,4183.5,3653.5,4211.5,4335.8,3457.9,2582.2,2652.5,2662.6,2902.0,2648.0,2581.9,2624.6,2547.4,2365.7,2630.7,2965.5,3259.8,3496.9,3666.1,3629.2,3851.6,3425.1,3514.5,3213.3,3587.5,4068.5,4575.8,4526.9,4563.1,4708.3,4872.4,4366.0,4264.2,3679.1,3727.1,3473.2,3777.7,3518.5,3114.2,3205.7,2699.0,2819.5,3154.5,3129.1,2855.9,2805.2,2858.3,2811.2,3067.6,3484.0,3452.2,3135.3,2951.9,2935.4,2862.1,2531.4,2327.7,2251.0,2190.6,2223.7,1977.5,1528.7,1564.3,1435.1,1550.5,1546.5,1679.9,1733.6,1724.1,1808.4,1600.2,1454.4,1487.8,1624.1,1444.2,1399.0,1417.5,1446.1,1432.8,1455.8,1534.5,1555.3,1212.9,1208.9,1221.3,1272.7,1271.5,1245.3,1251.7,1235.7,1273.0,1552.9,1689.5,1766.3,1706.3,1620.7,1806.5,1752.1,1668.6,1650.0,2085.6,2082.2,2096.5,2107.9,2255.3,2052.6,2174.6,2125.2,2003.1,1990.0,2088.3,2017.5,1929.2,1959.0,2266.6,2277.3,2244.1,2249.8,2237.7,2178.0,2160.4,2177.9,1948.0,1940.6,1931.7,1921.5,1973.5,1953.3,2082.2,2077.6,2021.4,2231.4,2568.7,2606.2,2757.9,2780.9,2786.2,2973.7,3257.1,3075.5,3200.0,3144.7,3269.0,3101.9,3091.9,3126.0,3166.3,3593.3,3878.0,3847.4,4696.9,5133.8,5084.8,4998.8,5304.1,5158.6,4891.5,4831.3,4694.1,4763.0,4571.2,4928.9,5094.0,5038.3,5179.6,4955.9,4699.3,4662.4,4155.2,4523.6,5070.9,5076.5,4324.0,4367.8,4346.6,4779.9,4262.8,4081.8,4398.6,4729.5,4880.1,4672.5,4675.0,5133.6,5053.6,5113.3,5982.2,6684.9,7290.4,7235.2,7526.3,7766.9,7073.2,6959.1,7314.8,7029.1,7528.0,7629.4,7264.1,7176.4,7150.1,7160.7,7012.0,6003.7,6141.5,6403.3,6127.2,5828.7,6227.7,6334.5,6975.0,7020.8,7744.5,7920.4,8110.3,7861.9,7867.6,7856.2,7513.3,8061.9,8124.6,8860.4,8726.6,8885.8,8496.8,8874.1,8738.5,8440.9,8053.2,8266.6,8579.6,8575.7,8347.2,9188.3,8559.7,8085.0,8520.7,8223.5,7788.9,7009.7,6457.7,6722.4,6724.8,6557.9,6593.4,6536.8,6805.5,6759.8,6964.9,6439.7,5720.5,5228.5,5117.2,5029.9,4892.1,4907.0,5416.8,5046.8,4906.5,5132.4,5262.2,5490.9,5851.6,5842.9,6113.4,5761.1,5731.9,5479.7,4710.5,4890.1,4709.0,4431.2,4734.1,4743.8,4813.9,4864.3,4728.2,4827.2,4678.4,5781.7,5777.8,5975.6,5748.1]},"assets":{"BTC":{"conservative":{"total_pct":117.2,"cagr_pct":9.3,"maxdd_pct":-18.1,"sharpe":0.8,"trades":151,"win_rate":41.1,"profit_factor":1.4},"full":{"total_pct":953.6,"cagr_pct":31.1,"maxdd_pct":-64.4,"sharpe":0.85},"buyhold":{"total_pct":474.8,"cagr_pct":22.3,"maxdd_pct":-81.2,"sharpe":0.64},"start":"2018-01-01","end":"2026-09-13","oos_train":{"cagr_pct":8.8,"maxdd_pct":-16.6,"sharpe":0.85,"profit_factor":1.4},"oos_test":{"cagr_pct":4.7,"maxdd_pct":-18.1,"sharpe":0.44,"profit_factor":1.24}},"ETH":{"conservative":{"total_pct":117.6,"cagr_pct":9.3,"maxdd_pct":-12.8,"sharpe":0.82,"trades":146,"win_rate":41.8,"profit_factor":1.49},"full":{"total_pct":1718.7,"cagr_pct":39.6,"maxdd_pct":-73.8,"sharpe":0.88},"buyhold":{"total_pct":234.0,"cagr_pct":14.9,"maxdd_pct":-94.0,"sharpe":0.59},"start":"2018-01-01","end":"2026-09-13","oos_train":{"cagr_pct":10.4,"maxdd_pct":-12.8,"sharpe":0.93,"profit_factor":1.53},"oos_test":{"cagr_pct":4.9,"maxdd_pct":-12.1,"sharpe":0.5,"profit_factor":1.33}},"BNB":{"conservative":{"total_pct":66.5,"cagr_pct":6.0,"maxdd_pct":-23.8,"sharpe":0.53,"trades":190,"win_rate":35.8,"profit_factor":1.32},"full":{"total_pct":2191.0,"cagr_pct":43.3,"maxdd_pct":-75.8,"sharpe":0.86},"buyhold":{"total_pct":8495.1,"cagr_pct":66.9,"maxdd_pct":-80.0,"sharpe":1.0},"start":"2018-01-01","end":"2026-09-13","oos_train":{"cagr_pct":7.3,"maxdd_pct":-18.5,"sharpe":0.65,"profit_factor":1.47},"oos_test":{"cagr_pct":3.5,"maxdd_pct":-23.8,"sharpe":0.34,"profit_factor":1.05}}},"yearly":{"BTC":{"2018":[0.0,-72.13],"2019":[18.03,91.7],"2020":[47.25,303.3],"2021":[-12.18,59.45],"2022":[0.0,-64.22],"2023":[25.63,155.76],"2024":[24.03,120.89],"2025":[-11.39,-6.29],"2026":[3.07,-11.7]},"ETH":{"2018":[0.0,-82.59],"2019":[2.53,-1.74],"2020":[24.28,470.16],"2021":[32.93,399.2],"2022":[-3.32,-67.46],"2023":[13.44,90.77],"2024":[9.91,46.27],"2025":[3.96,-10.97],"2026":[2.49,-15.15]},"BNB":{"2018":[-3.73,-27.68],"2019":[12.05,124.45],"2020":[0.63,172.37],"2021":[36.41,1268.89],"2022":[-3.97,-51.84],"2023":[5.45,26.59],"2024":[1.43,125.24],"2025":[4.65,23.07],"2026":[4.57,-15.97]}},"tf":{"1h":{"cagr_pct":-65.2,"total_pct":-100.0,"trades":3705,"maxdd_pct":-100.0},"4h":{"cagr_pct":-4.4,"total_pct":-32.7,"trades":955,"maxdd_pct":-58.9},"1d":{"cagr_pct":9.3,"total_pct":117.2,"trades":151,"maxdd_pct":-18.1}},"v1":{"total_pct":-55.095842687638566,"trades":240,"win_rate":25.8,"profit_factor":0.8641267200441879,"bh_pct":466.5},"dca":{"2018":{"cash":{"final":105000,"contributed":105000,"profit":0,"mult":1.0,"maxdd_pct":0.0,"maxdd_usd":0,"worst_vs_contrib":0,"worst_date":"2018-01-01","worst_vs_contrib_pct":0.0},"bh":{"final":500721,"contributed":105000,"profit":395721,"mult":4.77,"maxdd_pct":-74.8,"maxdd_usd":-412603,"worst_vs_contrib":-7320,"worst_date":"2020-03-12","worst_vs_contrib_pct":-55.9},"full":{"final":389496,"contributed":105000,"profit":284496,"mult":3.71,"maxdd_pct":-50.9,"maxdd_usd":-159728,"worst_vs_contrib":-1085,"worst_date":"2019-04-04","worst_vs_contrib_pct":-38.5},"half":{"final":491090,"contributed":105000,"profit":386090,"mult":4.68,"maxdd_pct":-59.1,"maxdd_usd":-249847,"worst_vs_contrib":-4070,"worst_date":"2018-12-15","worst_vs_contrib_pct":-37.4}},"2021pico":{"cash":{"final":59000,"contributed":59000,"profit":0,"mult":1.0,"maxdd_pct":0.0,"maxdd_usd":0,"worst_vs_contrib":0,"worst_date":"2021-11-01","worst_vs_contrib_pct":0.0},"bh":{"final":106533,"contributed":59000,"profit":47533,"mult":1.81,"maxdd_pct":-49.1,"maxdd_usd":-75459,"worst_vs_contrib":-6241,"worst_date":"2022-11-21","worst_vs_contrib_pct":-56.4},"full":{"final":87390,"contributed":59000,"profit":28390,"mult":1.48,"maxdd_pct":-29.6,"maxdd_usd":-23799,"worst_vs_contrib":-1371,"worst_date":"2023-03-10","worst_vs_contrib_pct":-26.9},"half":{"final":98806,"contributed":59000,"profit":39806,"mult":1.67,"maxdd_pct":-34.2,"maxdd_usd":-41282,"worst_vs_contrib":-3672,"worst_date":"2022-11-21","worst_vs_contrib_pct":-33.9}},"2023":{"cash":{"final":45000,"contributed":45000,"profit":0,"mult":1.0,"maxdd_pct":0.0,"maxdd_usd":0,"worst_vs_contrib":0,"worst_date":"2023-01-01","worst_vs_contrib_pct":0.0},"bh":{"final":68844,"contributed":45000,"profit":23844,"mult":1.53,"maxdd_pct":-46.6,"maxdd_usd":-43239,"worst_vs_contrib":-82,"worst_date":"2023-03-10","worst_vs_contrib_pct":-2.7},"full":{"final":55556,"contributed":45000,"profit":10556,"mult":1.23,"maxdd_pct":-25.5,"maxdd_usd":-11796,"worst_vs_contrib":-502,"worst_date":"2023-10-18","worst_vs_contrib_pct":-11.1},"half":{"final":62703,"contributed":45000,"profit":17703,"mult":1.39,"maxdd_pct":-32.3,"maxdd_usd":-22828,"worst_vs_contrib":-236,"worst_date":"2023-09-11","worst_vs_contrib_pct":-6.9}}}};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmtUSD = v => "US$" + Math.round(v).toLocaleString("es-CO");
+const fmtPct = (v, d=0) => (v>0?"+":v<0?"−":"") + Math.abs(v).toFixed(d).replace(".", ",") + "%";
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs={}, parent) => { const e=document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fDate = s => { const [y,m,d]=s.split("-"); return `${+d} ${MES[+m-1]} ${y}`; };
+
+function lineChart(box, o){
+  box.innerHTML = "";
+  const W = Math.max(320, box.clientWidth), H = o.height || Math.round(Math.min(420, Math.max(260, W*0.46)));
+  const narrow = W < 560;
+  const m = {t:12, r: o.endLabels && !narrow ? 150 : 14, b:28, l: narrow ? 52 : 64};
+  const svg = el("svg", {viewBox:`0 0 ${W} ${H}`, role:"img", "aria-label":o.aria}, box);
+  const n = o.dates.length, iw = W-m.l-m.r, ih = H-m.t-m.b;
+  const vis = o.series.filter(s=>s.on!==false);
+  let lo = Infinity, hi = -Infinity;
+  vis.forEach(s=>s.values.forEach(v=>{ if(v<lo)lo=v; if(v>hi)hi=v; }));
+  const L = Math.log10, y0=L(lo*0.9), y1=L(hi*1.1);
+  const x = i => m.l + iw*i/(n-1), y = v => m.t + ih*(1-(L(v)-y0)/(y1-y0));
+  if (o.shade){ let st=null; for(let i=0;i<=n;i++){ const on=i<n&&o.shade[i]; if(on&&st===null)st=i; if(!on&&st!==null){ el("rect",{x:x(st),y:m.t,width:Math.max(1,x(i-1)-x(st)),height:ih,fill:css("--in-wash")},svg); st=null; } } }
+  o.ticks.filter(t=>L(t)>=y0&&L(t)<=y1).forEach(t=>{ el("line",{x1:m.l,x2:W-m.r,y1:y(t),y2:y(t),stroke:css("--grid"),"stroke-width":1},svg); const tx=el("text",{x:m.l-8,y:y(t)+4,"text-anchor":"end"},svg); tx.textContent=o.yFmt(t); });
+  let lastY=null; o.dates.forEach((d,i)=>{ const yr=d.slice(0,4); if(yr!==lastY){ lastY=yr; if(narrow && +yr%2) return; const tx=el("text",{x:x(i),y:H-8,"text-anchor":"middle"},svg); tx.textContent=yr; } });
+  vis.forEach(s=>{ let dstr=""; s.values.forEach((v,i)=>{ dstr+=(i?"L":"M")+x(i).toFixed(1)+","+y(v).toFixed(1); }); el("path",{d:dstr,fill:"none",stroke:css(s.color),"stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round",class:"ln"},svg); });
+  if (o.endLabels){ const ends=vis.map(s=>({s,yy:y(s.values[n-1])})).sort((a,b)=>a.yy-b.yy); for(let i=1;i<ends.length;i++) if(ends[i].yy-ends[i-1].yy<30) ends[i].yy=ends[i-1].yy+30;
+    ends.forEach(({s,yy})=>{ el("circle",{cx:x(n-1),cy:y(s.values[n-1]),r:4.5,fill:css(s.color),stroke:css("--surface"),"stroke-width":2},svg); if(!narrow){ const t1=el("text",{x:x(n-1)+12,y:yy-2,class:"lbl"},svg); t1.textContent=s.short; const t2=el("text",{x:x(n-1)+12,y:yy+13},svg); t2.textContent=o.yFmt(s.values[n-1]); } }); }
+  const cross = el("line",{y1:m.t,y2:m.t+ih,stroke:css("--muted"),"stroke-width":1,opacity:0},svg);
+  const dots = vis.map(s=>el("circle",{r:4.5,fill:css(s.color),stroke:css("--surface"),"stroke-width":2,opacity:0},svg));
+  const tip = document.createElement("div"); tip.className="tip"; tip.hidden=true; box.appendChild(tip);
+  const hit = el("rect",{x:m.l,y:m.t,width:iw,height:ih,fill:"transparent"},svg);
+  const move = ev => { const r=svg.getBoundingClientRect(); const px=(ev.clientX-r.left)*W/r.width; const i=Math.max(0,Math.min(n-1,Math.round((px-m.l)/iw*(n-1)))); const cx=x(i);
+    cross.setAttribute("x1",cx); cross.setAttribute("x2",cx); cross.setAttribute("opacity",.6);
+    vis.forEach((s,k)=>{ dots[k].setAttribute("cx",cx); dots[k].setAttribute("cy",y(s.values[i])); dots[k].setAttribute("opacity",1); });
+    tip.innerHTML=`<div class="d">${fDate(o.dates[i])}${o.shade? (o.shade[i]?" · COMPRADO":" · FUERA"):""}</div>`+vis.map(s=>`<div class="r"><span><i style="background:${css(s.color)}"></i>${s.short}</span><span class="v">${o.yFmt(s.values[i])}</span></div>`).join("");
+    tip.hidden=false; const bw=box.clientWidth, tw=tip.offsetWidth, left=cx*r.width/W; tip.style.left=Math.min(bw-tw-4, Math.max(4, left + (left>bw/2? -tw-14 : 14)))+"px"; tip.style.top="8px"; };
+  const leave = () => { tip.hidden=true; cross.setAttribute("opacity",0); dots.forEach(d=>d.setAttribute("opacity",0)); };
+  hit.addEventListener("pointermove",move); hit.addEventListener("pointerdown",move); hit.addEventListener("pointerleave",leave);
+}
+
+function barChart(box, o){
+  box.innerHTML = "";
+  const W = Math.max(320, box.clientWidth), narrow = W < 600, H = o.height || (narrow? 300 : 340);
+  const m = {t:22, r:10, b:28, l:narrow?44:54};
+  const svg = el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":o.aria},box);
+  const iw=W-m.l-m.r, ih=H-m.t-m.b; const all=o.series.flatMap(s=>s.values);
+  let lo=Math.min(0,...all), hi=Math.max(0,...all); const step=o.step; lo=Math.floor(lo/step)*step; hi=Math.ceil(hi/step)*step;
+  const y=v=>m.t+ih*(hi-v)/(hi-lo);
+  for(let t=lo;t<=hi;t+=step){ el("line",{x1:m.l,x2:W-m.r,y1:y(t),y2:y(t),stroke:css(t===0?"--muted":"--grid"),"stroke-width":1},svg); const tx=el("text",{x:m.l-8,y:y(t)+4,"text-anchor":"end"},svg); tx.textContent=fmtPct(t); }
+  const band=iw/o.cats.length, ns=o.series.length, bw=Math.min(24,(band*0.7-2*(ns-1))/ns);
+  const tip=document.createElement("div"); tip.className="tip"; tip.hidden=true; box.appendChild(tip);
+  o.cats.forEach((c,ci)=>{ const cx=m.l+band*(ci+.5); const tx=el("text",{x:cx,y:H-8,"text-anchor":"middle"},svg); tx.textContent=narrow? "’"+c.slice(2) : c;
+    const grp=el("g",{},svg);
+    o.series.forEach((s,si)=>{ const v=s.values[ci]; const bx=cx-(ns*bw+2*(ns-1))/2+si*(bw+2); const y0=y(0), y1=y(v), h=Math.abs(y1-y0), r=Math.min(4,h/2);
+      let d; if(v>=0) d=`M${bx},${y0}V${y1+r}Q${bx},${y1} ${bx+r},${y1}H${bx+bw-r}Q${bx+bw},${y1} ${bx+bw},${y1+r}V${y0}Z`; else d=`M${bx},${y0}V${y1-r}Q${bx},${y1} ${bx+r},${y1}H${bx+bw-r}Q${bx+bw},${y1} ${bx+bw},${y1-r}V${y0}Z`;
+      el("path",{d,fill:css(s.color)},grp);
+      if(!narrow){ const lt=el("text",{x:bx+bw/2,y:v>=0?y1-5:y1+13,"text-anchor":"middle",style:"font-size:10.5px"},grp); lt.textContent=fmtPct(v); } });
+    const hitR=el("rect",{x:cx-band/2,y:m.t,width:band,height:ih,fill:"transparent"},svg);
+    const show=()=>{ tip.innerHTML=`<div class="d">${c}${c==="2026"?" (parcial)":""}</div>`+o.series.map(s=>`<div class="r"><span><i style="background:${css(s.color)}"></i>${s.label}</span><span class="v">${fmtPct(s.values[ci],1)}</span></div>`).join(""); tip.hidden=false; const r=svg.getBoundingClientRect(); const left=cx*r.width/W; const tw=tip.offsetWidth; tip.style.left=Math.min(box.clientWidth-tw-4,Math.max(4,left-tw/2))+"px"; tip.style.top="0px"; };
+    hitR.addEventListener("pointerenter",show); hitR.addEventListener("pointerdown",show); hitR.addEventListener("pointerleave",()=>tip.hidden=true);
+  });
+}
+
+function hbarChart(box){
+  box.innerHTML="";
+  const W=Math.max(320,box.clientWidth), narrow=W<560, rows=[["Velas de 1 hora","1h"],["Velas de 4 horas","4h"],["Velas diarias","1d"]];
+  const H=rows.length*56+30, m={t:10,r:12,b:24,l:narrow?108:140}; const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Retorno anual compuesto por temporalidad"},box);
+  const lo=-80, hi=narrow?60:40, iw=W-m.l-m.r, x=v=>m.l+iw*(v-lo)/(hi-lo);
+  [-80,-60,-40,-20,0,20,40].filter(t=>t<=hi).forEach(t=>{ el("line",{x1:x(t),x2:x(t),y1:m.t,y2:H-m.b,stroke:css(t===0?"--muted":"--grid"),"stroke-width":1},svg); const tx=el("text",{x:x(t),y:H-6,"text-anchor":"middle"},svg); tx.textContent=fmtPct(t); });
+  rows.forEach(([lab,k],i)=>{ const v=DATA.tf[k].cagr_pct, yy=m.t+i*56+12, h=22; const x0=x(0), x1=x(v), w=Math.abs(x1-x0), r=Math.min(4,w/2);
+    const bx=Math.min(x0,x1); let d= v>=0 ? `M${x0},${yy}H${x1-r}Q${x1},${yy} ${x1},${yy+r}V${yy+h-r}Q${x1},${yy+h} ${x1-r},${yy+h}H${x0}Z` : `M${x0},${yy}H${x1+r}Q${x1},${yy} ${x1},${yy+r}V${yy+h-r}Q${x1},${yy+h} ${x1+r},${yy+h}H${x0}Z`;
+    el("path",{d,fill:css(v<0?"--neg":"--s1")},svg);
+    const lt=el("text",{x:m.l-10,y:yy+15,"text-anchor":"end",class:"lbl",style:"font-family:var(--sans);font-size:13px"},svg); lt.textContent=lab;
+    const vt=el("text",{x:(v>=0?x1:x0)+8,y:yy+15,class:"lbl"},svg); vt.textContent=`${fmtPct(v,1)} · ${DATA.tf[k].trades.toLocaleString("es-CO")} op.`; });
+}
+
+const eqSeries=[{key:"full",short:"100% invertida",color:"--s1",on:true},{key:"bh",short:"Comprar y mantener",color:"--s3",on:true},{key:"cons",short:"Conservadora",color:"--s2",on:true}];
+let yrAsset="BTC";
+function drawAll(){
+  const h=DATA.hero;
+  lineChart(document.getElementById("c-hero"),{dates:h.dates,aria:"Precio semanal de BTC y su media de 200 días entre 2018 y 2026",series:[{short:"Precio",color:"--s1",values:h.close},{short:"Media 200 días",color:"--s2",values:h.sma}],shade:h.inpos,ticks:[2000,5000,10000,20000,50000,100000],yFmt:v=>v>=1000? "US$"+(v/1000).toLocaleString("es-CO",{maximumFractionDigits:1})+"k":fmtUSD(v)});
+  const e=DATA.eq;
+  lineChart(document.getElementById("c-eq"),{dates:e.dates,aria:"Valor de US$1.000 en BTC con cada versión de la estrategia y con comprar y mantener",endLabels:true,series:eqSeries.map(s=>({...s,values:e[s.key]})),ticks:[250,500,1000,2000,5000,10000],yFmt:fmtUSD});
+  const yd=DATA.yearly[yrAsset], cats=Object.keys(yd);
+  barChart(document.getElementById("c-yr"),{aria:`Retorno por año en ${yrAsset}`,cats,step:yrAsset==="BNB"?250:100,series:[{label:"Conservadora",color:"--s2",values:cats.map(c=>yd[c][0])},{label:"Comprar y mantener",color:"--s3",values:cats.map(c=>yd[c][1])}]});
+  hbarChart(document.getElementById("c-tf"));
+}
+// toggles
+const tg=document.getElementById("eq-toggles");
+eqSeries.forEach((s,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="toggle"; b.id="tg-"+s.key; b.setAttribute("aria-pressed","true"); b.innerHTML=`<i style="background:var(${s.color})"></i>${s.short}`; b.onclick=()=>{ const onCount=eqSeries.filter(x=>x.on).length; if(s.on&&onCount===1) return; s.on=!s.on; b.setAttribute("aria-pressed",String(s.on)); drawAll(); }; tg.appendChild(b); });
+["BTC","ETH","BNB"].forEach(a=>{ document.getElementById("y-"+a).onclick=()=>{ yrAsset=a; ["BTC","ETH","BNB"].forEach(b=>document.getElementById("y-"+b).setAttribute("aria-pressed",String(b===a))); drawAll(); }; });
+// tables
+const names={conservative:"Conservadora (2% riesgo)",full:"100% invertida",buyhold:"Comprar y mantener"}, cols={conservative:"--s2",full:"--s1",buyhold:"--s3"};
+let rows=""; ["BTC","ETH","BNB"].forEach(a=>{ ["conservative","full","buyhold"].forEach((k,i)=>{ const r=DATA.assets[a][k]; rows+=`<tr class="${i===0?"grp":""}"><td>${i===0?`<b>${a}</b>`:""}</td><td><span class="sw" style="background:var(${cols[k]})"></span>${names[k]}</td><td class="num">${fmtPct(r.cagr_pct,1)}</td><td class="num">${fmtPct(r.maxdd_pct,1)}</td><td class="num">${r.sharpe.toFixed(2).replace(".",",")}</td></tr>`; }); });
+document.getElementById("tbl-res").innerHTML=rows;
+document.getElementById("tbl-oos").innerHTML=["BTC","ETH","BNB"].map(a=>`<tr><td><b>${a}</b></td><td class="num">${fmtPct(DATA.assets[a].oos_train.cagr_pct,1)}</td><td class="num">${fmtPct(DATA.assets[a].oos_test.cagr_pct,1)}</td></tr>`).join("");
+if (location.hostname.endsWith("github.io")) { const u=location.hostname.split(".")[0], repo=location.pathname.split("/").filter(Boolean)[0]; if (repo) { document.getElementById("repo-a").href=`https://github.com/${u}/${repo}`; document.getElementById("repo-link").hidden=false; } }
+const usdS=v=>"US$"+Math.round(Math.abs(v)).toLocaleString("es-CO");
+const W={"2018":"Enero 2018","2021pico":"Nov. 2021 (pico)","2023":"Enero 2023"};
+document.getElementById("tbl-dca").innerHTML=["2018","2021pico","2023"].map(k=>{const d=DATA.dca[k];return `<tr><td>${W[k]}</td><td class="num">${usdS(d.cash.final)}</td><td class="num">${usdS(d.bh.final)}</td><td class="num">${usdS(d.half.final)}</td><td class="num">${usdS(d.full.final)}</td></tr>`;}).join("");
+document.getElementById("tbl-dcadd").innerHTML=["2018","2021pico","2023"].map(k=>{const d=DATA.dca[k];const f=r=>`${fmtPct(r.maxdd_pct,1)} <span style="color:var(--muted)">(−${usdS(r.maxdd_usd)})</span>`;return `<tr><td>${W[k]}</td><td class="num">${f(d.bh)}</td><td class="num">${f(d.half)}</td><td class="num">${f(d.full)}</td></tr>`;}).join("");
+drawAll();
+let rt; addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(drawAll,120); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",drawAll);
+new MutationObserver(drawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+</script>
+
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", fontFamily: "IBM Plex Sans, Arial, sans-serif" });
+</script>
+</body>
+</html>
