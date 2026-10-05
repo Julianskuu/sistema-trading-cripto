@@ -212,3 +212,8 @@ docs/       informes detallados de cada etapa
 Proyecto educativo. Nada de esto es asesoría financiera ni garantía de resultados; los resultados pasados no garantizan resultados futuros. El bot opera solo en el testnet de Binance, con dinero ficticio.
 
 Desarrollado con asistencia de IA (Claude, de Anthropic) para programación, análisis y revisión; las decisiones de diseño, las pruebas y la operación del bot son míos.
+## Derechos de autor
+
+© 2026 Brayan Julián Abella Martínez. Todos los derechos reservados.
+Puedes ver y estudiar este código, pero no está permitido copiarlo, usarlo, modificarlo ni venderlo sin mi autorización.
+Si te interesa usarlo o tienes una propuesta, escríbeme: brayanjulianabella132@gmail.com · [LinkedIn](https://www.linkedin.com/in/julian-abella-40b951426)
